@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers.dart';
+import '../auth_provider.dart';
 
-class CounterButton extends ConsumerWidget {
-  final int counter;
-
-  const CounterButton({super.key, required this.counter});
+class ThemeToggleButton extends ConsumerWidget {
+  const ThemeToggleButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = ref.watch(themeProvider);
+
     return FloatingActionButton(
       onPressed: () {
-        ref.read(counterProvider.notifier).state++;
+        ref.read(themeProvider.notifier).state = !isDark;
       },
-      child: Text('$counter'),
+      child: Icon(
+        isDark ? Icons.light_mode : Icons.dark_mode,
+      ),
     );
   }
 }
