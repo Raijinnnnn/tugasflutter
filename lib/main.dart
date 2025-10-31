@@ -1,13 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'auth_provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+// Import konfigurasi Firebase
+import 'firebase_options.dart';
+
+// Import halaman
 import 'home_page.dart';
 import 'login_page.dart';
-import 'theme_provider.dart';
+import 'register_page.dart';
 import 'tugas3_page.dart';
 
-void main() {
-  // ProviderScope adalah widget dari Riverpod yang menyimpan state dari semua provider.
+// Import provider
+import 'theme_provider.dart';
+import 'auth_provider.dart';
+
+Future<void> main() async {
+  // Wajib: inisialisasi Flutter dan Firebase
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Jalankan aplikasi dengan Riverpod
   runApp(const ProviderScope(child: MyApp()));
 }
 
@@ -16,47 +31,70 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Memantau perubahan tema (terang/gelap)
+    // Pantau state tema (terang/gelap)
     final themeMode = ref.watch(themeProvider);
-    // Memantau status otentikasi pengguna
-    final authState = ref.watch(authProvider);
 
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Tugas Flutter',
-
-      // --- Pengaturan Tema ---
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.light,
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-        ),
-      ),
+      debugShowCheckedModeBanner: false,
       themeMode: themeMode,
 
-      // --- PERBAIKAN 1: Logika Halaman Awal ---
-      // Mengecek apakah authState (objek User) tidak null.
-      // Jika tidak null, berarti pengguna sudah login.
-      home: authState != null ? const HomePage() : const LoginPage(),
+      // Tema terang
+      theme: ThemeData(
+        colorSchemeSeed: Colors.deepPurple,
+        brightness: Brightness.light,
+        useMaterial3: true,
+      ),
 
-      // --- Pengaturan Rute (Routes) ---
+      // Tema gelap
+      darkTheme: ThemeData(
+        colorSchemeSeed: Colors.deepPurple,
+        brightness: Brightness.dark,
+        useMaterial3: true,
+      ),
+
+      // Halaman awal otomatis tergantung login
+      home: const AuthWrapper(),
+
+      // Rute-rute aplikasi
       routes: {
         '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
         '/home': (context) => const HomePage(),
-        // --- PERBAIKAN 2: Constructor Widget ---
-        // Menambahkan 'const' kembali karena ini adalah praktik terbaik untuk widget
-        // yang tidak berubah. Error sebelumnya terjadi karena 'const' ada di Map, bukan di sini.
-        '/tugas3': (context) => const Tugas3Page(),
+        '/tugas3': (context) => Tugas3Page(),
       },
     );
   }
 }
 
+// -----------------------------------------------------------------------------
+// WIDGET PENTING: AuthWrapper
+// Mengecek apakah user sudah login, dan mengarahkan ke halaman yang sesuai.
+// -----------------------------------------------------------------------------
+class AuthWrapper extends ConsumerWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+
+    return authState.when(
+      data: (user) {
+        // Jika user tidak null -> sudah login
+        if (user != null) {
+          return const HomePage();
+        }
+        // Jika belum login -> tampilkan halaman login
+        return const LoginPage();
+      },
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, _) => Scaffold(
+        body: Center(
+          child: Text('Terjadi error: $error'),
+        ),
+      ),
+    );
+  }
+}

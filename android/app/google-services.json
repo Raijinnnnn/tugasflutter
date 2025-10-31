@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "590978230205",
+    "project_id": "tokosegar-maserdine",
+    "storage_bucket": "tokosegar-maserdine.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:590978230205:android:f41832646dc4ba3fc3d4d4",
+        "android_client_info": {
+          "package_name": "com.example.tugas1_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUS7c7zpQ4NQUt4_g5S2Fn8_lwsLRFxFU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
